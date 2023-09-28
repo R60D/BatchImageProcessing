@@ -6,8 +6,10 @@ This is a Python script that converts and pads the images in a specified directo
 - Python 3.10
 - Pillow 10.0
 
-## Usage
 
+![Alt text](python_ZvfW5ZdXJN.png)
+
+## Usage
 - Run the script using `python image_converter_and_padder.py`
 - A window will appear with some options to configure the conversion process.
 - Select the source directory where the images are located by clicking on the "Select source" button.
