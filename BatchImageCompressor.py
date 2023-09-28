@@ -104,7 +104,7 @@ def run_conversion():
 
 def select_source():
     
-    directory = fd.askdirectory(title="Select source directory",initialdir=select_source)
+    directory = fd.askdirectory(title="Select source directory",initialdir=source_folder)
     
     if directory:
         source_label.config(text=directory)
@@ -112,7 +112,7 @@ def select_source():
 
 def select_destination():
     
-    directory = fd.askdirectory(title="Select destination directory",initialdir=destination_button)
+    directory = fd.askdirectory(title="Select destination directory",initialdir=destination_folder)
     
     if directory:
         destination_label.config(text=directory)
