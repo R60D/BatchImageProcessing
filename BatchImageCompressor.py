@@ -122,9 +122,6 @@ window = tk.Tk()
 
 window.title("Image Converter and Padder")
 
-window.geometry("800x400")
-window.minsize(800, 400)
-window.maxsize(800, 400)
 
 explanation_label = tk.Label(window,  justify="center", text="This script will convert and pad the images in the specified file directory to the specified aspect ratio and compress the files to jpg when possible.")
 
