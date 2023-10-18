@@ -23,6 +23,21 @@ OriginalRatio = False
 count = 0
 maxcount = 0
 
+
+import os
+
+def get_dir_size(dir_path):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(dir_path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            # skip if it is symbolic link
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+    # return the total size in megabytes
+    return round(total_size / (1024 * 1024),1)
+
+
 def convert_and_pad(file,destfolder):
     global count
     file_name, file_ext = os.path.splitext(file)
@@ -83,6 +98,7 @@ def run_conversion():
     global OriginalRatio
     global count
     global maxcount
+    maxcount = 0
     try:
         try:
             aspect_ratio = tuple(map(int, aspect_ratio_var.get().split(":")))
@@ -136,6 +152,13 @@ def run_conversion():
 
         for thread in threads:
             thread.join()
+    
+
+
+    text_box.config(state="normal")
+    text_box.delete(1.0, tk.END) 
+    text_box.insert(tk.END, f"Converted {count} files. {get_dir_size(source_folder)}MB -> {get_dir_size(destination_folder)} MB ") 
+    text_box.config(state="disabled")
 
 
 
@@ -163,7 +186,7 @@ def select_destination():
 
 window = tk.Tk()
 
-window.title("Image Converter and Padder")
+window.title("Batch jpg converter")
 
 
 explanation_label = tk.Label(window,  justify="center", text="This script will convert and pad the images in the specified file directory to the specified aspect ratio and compress the files to jpg when possible.")
@@ -189,13 +212,13 @@ destination_button.grid(row=2, column=1, pady=10)
 
 aspect_ratio_label = tk.Label(window, text="Select the aspect ratio (width:height):")
 aspect_ratio_var = tk.StringVar(window)
-aspect_ratio_var.set("16:9") 
+aspect_ratio_var.set("Original:Original") 
 aspect_ratio_options = ["4:3", "16:9", "16:10", "21:9", "32:9","1:1", "Original:Original"] 
 aspect_ratio_menu = tk.OptionMenu(window, aspect_ratio_var, *aspect_ratio_options)
 
 size_ratio_label = tk.Label(window, text="Select Image size ratio")
 size_ratio_var = tk.StringVar(window)
-size_ratio_var.set("1.0") 
+size_ratio_var.set("0.5") 
 size_ratio_options = ["1.0", "0.5", "0.25"] 
 size_ratio_menu = tk.OptionMenu(window, size_ratio_var, *size_ratio_options)
 
