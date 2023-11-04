@@ -24,7 +24,16 @@ count = 0
 maxcount = 0
 
 
-import os
+# Define a function that takes an image format and a tuple of height and width
+def resize_image(Image):
+    try:
+        convertedsize = tuple(map(int, resolution_var.get().split("x")))
+    except:
+        return Image
+    # Open the image file with the given format
+    # Resize the image to the given size
+    return Image.resize(convertedsize)
+    # Return the image object
 
 def get_dir_size(dir_path):
     total_size = 0
@@ -60,7 +69,6 @@ def convert_and_pad(file,destfolder):
                     os.makedirs(destfolder)
             except:
                 1
-            scale = float(size_ratio_var.get())
             if not OriginalRatio:
 
                 new_width = max(width, int(height * aspect_ratio[0] / aspect_ratio[1]))
@@ -69,12 +77,11 @@ def convert_and_pad(file,destfolder):
                 new_image = Image.new("RGB", (new_width, new_height), padding_color)
                 
                 new_image.paste(image, ((new_width - width) // 2, (new_height - height) // 2))
-                resizedimage = new_image.resize((round(scale*new_image.width),round(scale*new_image.height)),resample=Image.LANCZOS)
-                resizedimage.save(destfolder + "/" + os.path.basename(file_name) + ".jpg", quality=jpg_quality)
+                new_image = resize_image(new_image)
+                new_image.save(destfolder + "/" + os.path.basename(file_name) + ".jpg", quality=jpg_quality)
             else:
-                
-                resizedimage = image.resize((round(scale*image.width),round(scale*image.height)),resample=Image.LANCZOS)
-                resizedimage.save(destfolder + "/" + os.path.basename(file_name) + ".jpg", quality=jpg_quality)
+                new_image = resize_image(image)
+                new_image.save(destfolder + "/" + os.path.basename(file_name) + ".jpg", quality=jpg_quality)
 
             
             image.close()
@@ -102,6 +109,7 @@ def run_conversion():
     try:
         try:
             aspect_ratio = tuple(map(int, aspect_ratio_var.get().split(":")))
+            OriginalRatio = False
         except:
             OriginalRatio = True
 
@@ -212,23 +220,27 @@ destination_button.grid(row=2, column=1, pady=10)
 
 aspect_ratio_label = tk.Label(window, text="Select the aspect ratio (width:height):")
 aspect_ratio_var = tk.StringVar(window)
-aspect_ratio_var.set("Original:Original") 
-aspect_ratio_options = ["4:3", "16:9", "16:10", "21:9", "32:9","1:1", "Original:Original"] 
+aspect_ratio_var.set("Original") 
+aspect_ratio_options = ["4:3", "16:9", "16:10", "21:9", "32:9","1:1", "Original"] 
 aspect_ratio_menu = tk.OptionMenu(window, aspect_ratio_var, *aspect_ratio_options)
 
-size_ratio_label = tk.Label(window, text="Select Image size ratio")
-size_ratio_var = tk.StringVar(window)
-size_ratio_var.set("0.5") 
-size_ratio_options = ["1.0", "0.5", "0.25"] 
-size_ratio_menu = tk.OptionMenu(window, size_ratio_var, *size_ratio_options)
+# Create a label for the resolution parameter
+resolution_label = tk.Label(window, text="Select the image resolution (width x height):")
+resolution_var = tk.StringVar(window)
+resolution_var.set("Original")
+resolution_options = ["Original","512x512", "1024x1024", "2048x2048", "4096x4096", "8192x8192"]
+resolution_menu = ttk.Combobox(window, textvariable=resolution_var, values=resolution_options)
+# Place the resolution label in row 4, column 0, and align it to the right
+resolution_label.grid(row=4, column=0, sticky="E", pady=10)
+# Place the resolution menu in row 4, column 1
+resolution_menu.grid(row=4, column=1, pady=10)
+
 
 # Place the aspect ratio label in row 3, column 0, and align it to the right
 aspect_ratio_label.grid(row=3, column=0, sticky="E", pady=10)
 # Place the aspect ratio menu in row 3, column 1
 aspect_ratio_menu.grid(row=3, column=1, pady=10)
 
-size_ratio_label.grid(row=6, column=0, sticky="E", pady=10)
-size_ratio_menu.grid(row=6, column=1, pady=10)
 
 quality_label = tk.Label(window, text="Adjust the jpg quality (0-100):")
 quality_var = tk.IntVar(window)
@@ -236,9 +248,9 @@ quality_var.set(80)
 quality_slider = tk.Scale(window, from_=0, to=100, orient=tk.HORIZONTAL, variable=quality_var)
 
 # Place the quality label in row 4, column 0, and align it to the right
-quality_label.grid(row=4, column=0, sticky="E", pady=10)
+quality_label.grid(row=7, column=0, sticky="E", pady=10)
 # Place the quality slider in row 4, column 1
-quality_slider.grid(row=4, column=1,pady=10)
+quality_slider.grid(row=7, column=1,pady=10)
 
 color_label = tk.Label(window, text="Enter the hex value of the padding color:")
 color_entry = tk.Entry(window)
@@ -249,10 +261,10 @@ color_entry.grid(row=5,column=1,pady=10,padx=0)
 button = tk.Button(window,text="Run Conversion",command=lambda: threading.Thread(target=run_conversion).start())
 
 # Place the button in row 6,column 0,and span 2 columns
-button.grid(row=7,column=1,columnspan=3,pady=52)
+button.grid(row=8,column=1,columnspan=3,pady=52)
 text_box = tk.Text(window,width =60,height =3) #text box
 text_box.config(state="disabled")
-text_box.grid(row =7,column =0,columnspan =1,pady =52,sticky="E") #place text box
+text_box.grid(row =8,column =0,columnspan =1,pady =52,sticky="E") #place text box
 
 
 window.mainloop()
