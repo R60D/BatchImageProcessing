@@ -9,7 +9,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog as fd 
 from concurrent.futures import ThreadPoolExecutor
-
+import pickle
 
 source_folder = os.path.dirname(os.path.abspath(__file__)) 
 destination_folder = os.path.join(source_folder, "Converted") 
@@ -192,6 +192,56 @@ def select_destination():
 
 
 
+
+
+# Define a function to save the variables to a file
+def save_variables():
+    # Get the values of the variables
+    source = source_label["text"]
+    destination = destination_label["text"]
+    aspect_ratio = aspect_ratio_var.get()
+    resolution = resolution_var.get()
+    quality = quality_var.get()
+    color = color_entry.get()
+    # Create a dictionary to store the variables
+    variables = {"source": source, "destination": destination, "aspect_ratio": aspect_ratio, "resolution": resolution, "quality": quality, "color": color}
+    # Open a file in write mode
+    file = open("variables.pkl", "wb")
+    # Use pickle to dump the variables to the file
+    pickle.dump(variables, file)
+    # Close the file
+    file.close()
+    # Show a message that the variables are saved
+    text_box.config(state="normal")
+    text_box.delete(1.0, "end")
+    text_box.insert(1.0, "Variables saved successfully.")
+    text_box.config(state="disabled")
+
+# Define a function to load the variables from a file
+def load_variables():
+    # Use a try-except block to handle any errors
+    try:
+        # Open a file in read mode
+        file = open("variables.pkl", "rb")
+        # Use pickle to load the variables from the file
+        variables = pickle.load(file)
+        # Close the file
+        file.close()
+        # Set the values of the variables
+        source_label["text"] = variables["source"]
+        destination_label["text"] = variables["destination"]
+        aspect_ratio_var.set(variables["aspect_ratio"])
+        resolution_var.set(variables["resolution"])
+        quality_var.set(variables["quality"])
+        color_entry.delete(0, "end")
+        color_entry.insert(0, variables["color"])
+    except:
+        # Show a message that the file is not found or corrupted
+        text_box.config(state="normal")
+        text_box.delete(1.0, "end")
+        text_box.insert(1.0, "No file found or file corrupted. Please enter the variables manually.")
+        text_box.config(state="disabled")
+
 window = tk.Tk()
 
 window.title("Batch jpg converter")
@@ -266,5 +316,21 @@ text_box = tk.Text(window,width =60,height =3) #text box
 text_box.config(state="disabled")
 text_box.grid(row =8,column =0,columnspan =1,pady =52,sticky="E") #place text box
 
+# Create a button to call the save_variables function
+save_button = tk.Button(window, text="Save Variables", command=save_variables)
+# Place the save button in row 9, column 0
+save_button.grid(row=9, column=0, pady=10)
+# Bind the Ctrl+S shortcut to the save_variables function
+window.bind("<Control-s>", lambda event: save_variables())
+
+# Create a button to call the load variables function
+save_button = tk.Button(window, text="Load Variables", command=load_variables)
+# Place the save button in row 9, column 0
+save_button.grid(row=9, column=1, pady=10)
+# Bind the Ctrl+S shortcut to the save_variables function
+window.bind("<Control-r>", lambda event: load_variables())
+
+# Call the load_variables function at the beginning of the script
+load_variables()
 
 window.mainloop()
