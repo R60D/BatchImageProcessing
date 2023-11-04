@@ -235,6 +235,10 @@ def load_variables():
         quality_var.set(variables["quality"])
         color_entry.delete(0, "end")
         color_entry.insert(0, variables["color"])
+        text_box.config(state="normal")
+        text_box.delete(1.0, "end")
+        text_box.insert(1.0, "Variables loaded successfully.")
+        text_box.config(state="disabled")
     except:
         # Show a message that the file is not found or corrupted
         text_box.config(state="normal")
