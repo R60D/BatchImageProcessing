@@ -10,7 +10,7 @@ from tkinter import ttk
 from tkinter import filedialog as fd 
 from concurrent.futures import ThreadPoolExecutor
 import pickle
-
+import numpy as np
 source_folder = os.path.dirname(os.path.abspath(__file__)) 
 destination_folder = os.path.join(source_folder, "Converted") 
 
@@ -46,6 +46,28 @@ def get_dir_size(dir_path):
     # return the total size in megabytes
     return round(total_size / (1024 * 1024),1)
 
+def pillow_function(image, green_value):
+    # Load the image and get its size
+    img = image
+    width, height = img.size
+
+    # Create a new image with the same size and mode as the original image
+    new_img = Image.new(img.mode, (width, height))
+
+    # Loop through the pixels of the original image
+    for x in range(width):
+        for y in range(height):
+            # Get the RGB values of the pixel
+            r, g, b = img.getpixel((x, y))
+
+            # Set the green value to the specified value
+            g = int(green_value*255)
+
+            # Put the new RGB values in the new image
+            new_img.putpixel((x, y), (r, g, b))
+
+    # Return the new image
+    return new_img
 
 def convert_and_pad(file,destfolder):
     global count
@@ -77,11 +99,16 @@ def convert_and_pad(file,destfolder):
                 new_image = Image.new("RGB", (new_width, new_height), padding_color)
                 
                 new_image.paste(image, ((new_width - width) // 2, (new_height - height) // 2))
-                new_image = resize_image(new_image)
-                new_image.save(destfolder + "/" + os.path.basename(file_name) + ".jpg", quality=jpg_quality)
+                if green_var.get():
+                    new_image = pillow_function(resize_image(new_image),0.5)
+                else:
+                    new_image = resize_image(new_image)
             else:
-                new_image = resize_image(image)
-                new_image.save(destfolder + "/" + os.path.basename(file_name) + ".jpg", quality=jpg_quality)
+                if green_var.get():
+                    new_image = pillow_function(resize_image(image),0.5)
+                else:
+                    new_image = resize_image(image)
+            new_image.save(destfolder + "/" + os.path.basename(file_name) + ".jpg", quality=jpg_quality)
 
             
             image.close()
@@ -93,7 +120,7 @@ def convert_and_pad(file,destfolder):
 
 
 def run_conversion():
-    
+    print(green_var.get())
     button.config(state=tk.DISABLED)
     
     
@@ -127,13 +154,15 @@ def run_conversion():
         if not os.path.isdir(destination_folder):
             raise ValueError("Invalid destination directory")
     except ValueError as e:
-        
+        text_box.config(state="normal")
         text_box.delete(1.0, tk.END) 
         text_box.insert(tk.END, f"Error: {e}") 
+        text_box.config(state="disabled")
         
         button.config(state=tk.NORMAL)
+        print("END")    
         return
-    
+    print("END")    
     # Loop through the source folder and its subfolders
     tasks = []
     count = 0
@@ -148,7 +177,7 @@ def run_conversion():
             tasks.append([file_path,destination_path])
             maxcount += 1
 
-            
+    print("END")        
     threadgroups = [tasks[i:i+chunk_size] for i in range(0, len(tasks), chunk_size)]   
     for workgroup in threadgroups:
         threads = []
@@ -161,7 +190,7 @@ def run_conversion():
         for thread in threads:
             thread.join()
     
-
+    
 
     text_box.config(state="normal")
     text_box.delete(1.0, tk.END) 
@@ -306,6 +335,17 @@ quality_label.grid(row=7, column=0, sticky="E", pady=10)
 # Place the quality slider in row 4, column 1
 quality_slider.grid(row=7, column=1,pady=10)
 
+green_label = tk.Label(window, text="Set Green Channel to 0.5")
+green_var = tk.BooleanVar(window)
+green_var.set(80) 
+
+green_button = tk.Checkbutton(window,variable=green_var)
+
+# Place the quality label in row 4, column 0, and align it to the right
+green_label.grid(row=9, column=0, sticky="E", pady=10)
+# Place the quality slider in row 4, column 1
+green_button.grid(row=9, column=1,pady=10)
+
 color_label = tk.Label(window, text="Enter the hex value of the padding color:")
 color_entry = tk.Entry(window)
 color_entry.insert(0,"#000000")
@@ -323,14 +363,14 @@ text_box.grid(row =8,column =0,columnspan =1,pady =52,sticky="E") #place text bo
 # Create a button to call the save_variables function
 save_button = tk.Button(window, text="Save Variables", command=save_variables)
 # Place the save button in row 9, column 0
-save_button.grid(row=9, column=0, pady=10)
+save_button.grid(row=9, column=2, pady=10)
 # Bind the Ctrl+S shortcut to the save_variables function
 window.bind("<Control-s>", lambda event: save_variables())
 
 # Create a button to call the load variables function
 save_button = tk.Button(window, text="Load Variables", command=load_variables)
 # Place the save button in row 9, column 0
-save_button.grid(row=9, column=1, pady=10)
+save_button.grid(row=9, column=3, pady=10)
 # Bind the Ctrl+S shortcut to the save_variables function
 window.bind("<Control-r>", lambda event: load_variables())
 
